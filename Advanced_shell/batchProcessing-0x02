@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# File: batchProcessing-0x02
-# Description: Batch process Pokémon data retrieval with error handling and retry logic.
+# File: batchProcessing-0x04
+# Description: Batch process Pokémon data retrieval using parallel processing.
 
 # API URL
 API_URL="https://pokeapi.co/api/v2/pokemon"
@@ -10,7 +10,13 @@ API_URL="https://pokeapi.co/api/v2/pokemon"
 POKEMON_LIST=("Bulbasaur" "Ivysaur" "Venusaur" "Charmander" "Charmeleon")
 
 # Directory to save JSON files
-OUTPUT_DIR="./"
+OUTPUT_DIR="./pokemon_data"
+
+# Ensure the output directory exists
+mkdir -p "$OUTPUT_DIR"
+
+# Clear previous error log
+> error_log.txt
 
 # Function to retrieve Pokémon data
 fetch_pokemon_data() {
@@ -38,16 +44,13 @@ fetch_pokemon_data() {
   return 1
 }
 
-# Ensure the output directory exists
-mkdir -p "$OUTPUT_DIR"
-
-# Clear previous error log
-> error_log.txt
-
-# Loop through each Pokémon
+# Loop through each Pokémon in parallel
 for pokemon in "${POKEMON_LIST[@]}"; do
-  fetch_pokemon_data "$pokemon"
+  fetch_pokemon_data "$pokemon" &
 done
+
+# Wait for all background processes to complete
+wait
 
 # Completion message
 echo "Batch processing completed. Errors logged to error_log.txt if any."
