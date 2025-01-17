@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# File: batchProcessing-0x02
+# Description: Retrieve Pokémon data and save it to individual JSON files.
+
+# List of Pokémon
+POKEMON_LIST=("Bulbasaur" "Ivysaur" "Venusaur" "Charmander" "Charmeleon")
+
+# Base URL of the Pokémon API
+API_BASE_URL="https://pokeapi.co/api/v2/pokemon"
+
+# Delay between API requests (in seconds) to handle rate-limiting
+REQUEST_DELAY=2
+
+# Loop through each Pokémon
+for POKEMON in "${POKEMON_LIST[@]}"; do
+  # Convert Pokémon name to lowercase for the file name
+  FILENAME="$(echo "$POKEMON" | awk '{print tolower($0)}').json"
+
+  echo "Fetching data for $POKEMON..."
+
+  # Fetch Pokémon data from the API and save it to the file
+  curl -s "${API_BASE_URL}/$(echo "$POKEMON" | awk '{print tolower($0)}')" -o "$FILENAME"
+
+  # Check if the request was successful
+  if [[ $? -eq 0 ]]; then
+    echo "Data for $POKEMON saved to $FILENAME."
+  else
+    echo "Error: Failed to fetch data for $POKEMON."
+  fi
+
+  # Wait before the next request
+  sleep "$REQUEST_DELAY"
+done
+
+echo "Batch Pokémon data retrieval completed."
