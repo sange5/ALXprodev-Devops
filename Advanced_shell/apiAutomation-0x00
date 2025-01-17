@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Define the API endpoint and output files
+POKEMON_API="https://pokeapi.co/api/v2/pokemon/pikachu"
+OUTPUT_FILE="data.json"
+ERROR_FILE="errors.txt"
+
+# Make the API request using curl
+curl -s -o $OUTPUT_FILE -w "%{http_code}" $POKEMON_API | {
+    read -r HTTP_CODE
+    if [ "$HTTP_CODE" -ne 200 ]; then
+        echo "$(date): Failed to fetch data for Pikachu. HTTP Status: $HTTP_CODE" >> $ERROR_FILE
+        rm -f $OUTPUT_FILE # Remove partial or empty output file
+    else
+        echo "Data successfully fetched and saved to $OUTPUT_FILE"
+    fi
+}
