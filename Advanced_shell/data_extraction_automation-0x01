@@ -11,15 +11,15 @@ if [[ ! -f $JSON_FILE ]]; then
 fi
 
 # Extract data using jq
-pokemon_name=$(jq -r '.name' "$JSON_FILE")
+name=$(jq -r '.name' "$JSON_FILE")
 height=$(jq -r '.height' "$JSON_FILE")
 weight=$(jq -r '.weight' "$JSON_FILE")
 types=$(jq -r '.types[].type.name' "$JSON_FILE" | awk '{printf "%s, ", $0}' | sed 's/, $//')
 
 # Convert height and weight to human-readable units
 # Assuming height is in decimeters and weight is in hectograms
-height_m=$(awk "BEGIN {printf \"%.1f\", $height / 10}")
-weight_kg=$(awk "BEGIN {printf \"%.1f\", $weight / 10}")
+formatted_height=$(awk "BEGIN {printf \"%.1f\", $height / 10}")
+formatted_weight=$(awk "BEGIN {printf \"%.1f\", $weight / 10}")
 
-# Format and display the output
-echo "$pokemon_name is of type $types, weighs ${weight_kg}kg, and is ${height_m}m tall."
+# Formatted output
+echo "$name is of type $types, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."
