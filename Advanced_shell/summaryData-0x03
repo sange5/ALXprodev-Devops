@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# File: summaryData-0x03
+# Description: Summarize Pokémon data from JSON files into a CSV and calculate averages.
+
+# Directory containing Pokémon JSON files
+POKEMON_DIR="./"
+CSV_FILE="pokemon_summary.csv"
+
+# Ensure there are JSON files in the directory
+JSON_FILES=($(ls $POKEMON_DIR/*.json 2>/dev/null))
+if [[ ${#JSON_FILES[@]} -eq 0 ]]; then
+  echo "Error: No JSON files found in $POKEMON_DIR."
+  exit 1
+fi
+
+# Create CSV header
+echo "Name,Height (m),Weight (kg)" > $CSV_FILE
+
+# Initialize variables for average calculation
+total_height=0
+total_weight=0
+count=0
+
+# Process each JSON file
+for JSON_FILE in "${JSON_FILES[@]}"; do
+  # Extract data using jq
+  name=$(jq -r '.name' "$JSON_FILE")
+  height=$(jq -r '.height' "$JSON_FILE")
+  weight=$(jq -r '.weight' "$JSON_FILE")
+
+  # Convert height (decimeters to meters) and weight (hectograms to kilograms)
+  formatted_height=$(awk "BEGIN {printf \"%.1f\", $height / 10}")
+  formatted_weight=$(awk "BEGIN {printf \"%.1f\", $weight / 10}")
+
+  # Append data to CSV
+  echo "$name,$formatted_height,$formatted_weight" >> $CSV_FILE
+
+  # Update totals for averages
+  total_height=$(awk "BEGIN {print $total_height + $formatted_height}")
+  total_weight=$(awk "BEGIN {print $total_weight + $formatted_weight}")
+  count=$((count + 1))
+done
+
+# Calculate averages
+average_height=$(awk "BEGIN {printf \"%.2f\", $total_height / $count}")
+average_weight=$(awk "BEGIN {printf \"%.2f\", $total_weight / $count}")
+
+# Display summary
+echo "Summary Report:"
+echo "Average Height: ${average_height}m"
+echo "Average Weight: ${average_weight}kg"
+echo "CSV report generated: $CSV_FILE"
