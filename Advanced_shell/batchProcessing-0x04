@@ -54,3 +54,53 @@ wait
 
 # Completion message
 echo "Batch processing completed. Errors logged to error_log.txt if any."
+
+import requests
+import multiprocessing
+
+# List of Pokémon IDs to fetch data for (example list)
+pokemon_ids = [1, 2, 3, 4, 5]
+
+# Function to fetch data for each Pokémon
+def fetch_pokemon_data(pokemon_id):
+    url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_id}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+# Function to handle the processing and result collection
+def process_pokemon_data(pokemon_id, result_queue):
+    data = fetch_pokemon_data(pokemon_id)
+    result_queue.put((pokemon_id, data))
+
+def main():
+    # Queue to collect results
+    result_queue = multiprocessing.Queue()
+
+    # List to hold process references
+    processes = []
+
+    # Create processes for each Pokémon
+    for pokemon_id in pokemon_ids:
+        process = multiprocessing.Process(target=process_pokemon_data, args=(pokemon_id, result_queue))
+        processes.append(process)
+        process.start()
+
+    # Ensure all processes are completed
+    for process in processes:
+        process.join()
+
+    # Collect all results
+    results = {}
+    while not result_queue.empty():
+        pokemon_id, data = result_queue.get()
+        results[pokemon_id] = data
+
+    # Do something with the results
+    print("Fetched data for Pokémon:", results)
+
+if __name__ == "__main__":
+    main()
+
